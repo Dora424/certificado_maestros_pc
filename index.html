@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certificado de Agradecimiento · PC e IA · Ceibal</title>
+  
+  <!-- Tipografías de Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=JetBrains+Mono:wght@400;600;700&family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Librería html2canvas para descargar el diploma como imagen PNG -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --bg-app: #f1f5f9;
+      --panel-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-ui: #e2e8f0;
+      --ceibal-green: #009c49;
+      --ceibal-dark: #007537;
+
+      /* Variables dinámicas del diploma (cambian con las paletas) */
+      --cert-primary: #009c49;
+      --cert-secondary: #0284c7;
+      --cert-accent: #f59e0b;
+      --cert-bg: #ffffff;
+      --cert-border-bg: #f0fdf4;
+      --cert-font: 'Montserrat', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-app);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Barra superior */
+    header {
+      background: linear-gradient(135deg, var(--ceibal-dark), var(--ceibal-green));
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header span.badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    /* Contenedor principal en dos columnas */
+    .workspace {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+      flex: 1;
+    }
+
+    /* Panel izquierdo de controles */
+    .controls-panel {
+      background: var(--panel-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--border-ui);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      height: fit-content;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-group label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--ceibal-green);
+      box-shadow: 0 0 0 3px rgba(0, 156, 73, 0.15);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 92px;
+      line-height: 1.45;
+    }
+
+    /* Botón de mensaje sugerido */
+    .btn-idea {
+      background: #ecfdf5;
+      color: var(--ceibal-dark);
+      border: 1px solid #a7f3d0;
+      border-radius: 8px;
+      padding: 4px 9px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-idea:hover {
+      background: #d1fae5;
+    }
+
+    /* Selectores de Tipografía */
+    .font-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .font-btn {
+      padding: 9px 10px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      background: #f8fafc;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: #334155;
+      transition: all 0.15s;
+    }
+
+    .font-btn.active {
+      border-color: var(--ceibal-green);
+      background: #ecfdf5;
+      color: var(--ceibal-dark);
+      font-weight: 700;
+    }
+
+    /* Selectores de Paleta de Colores */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .palette-btn {
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 6px;
+      background: white;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .palette-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .palette-btn.active {
+      border-color: #0f172a;
+      background: #f8fafc;
+    }
+
+    .swatch-row {
+      display: flex;
+      gap: 3px;
+    }
+
+    .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+
+    /* Stickers */
+    .stickers-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .sticker-btn {
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      background: #f8fafc;
+      padding: 8px 4px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #475569;
+      transition: all 0.15s;
+    }
+
+    .sticker-btn span.emoji {
+      font-size: 1.35rem;
+    }
+
+    .sticker-btn.active {
+      border-color: var(--ceibal-green);
+      background: #ecfdf5;
+      color: var(--ceibal-dark);
+      box-shadow: 0 2px 6px rgba(0, 156, 73, 0.15);
+    }
+
+    /* Subida opcional de logo */
+    .logo-upload-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-upload {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1.5px dashed #94a3b8;
+      border-radius: 10px;
+      background: #f8fafc;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .btn-upload:hover {
+      border-color: var(--ceibal-green);
+      background: #ecfdf5;
+    }
+
+    .btn-reset-logo {
+      padding: 8px 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      background: white;
+      font-size: 0.78rem;
+      cursor: pointer;
+      color: #64748b;
+    }
+
+    /* Botones de descarga */
+    .actions-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border-ui);
+    }
+
+    .btn-primary {
+      background: var(--ceibal-green);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--ceibal-dark);
+    }
+
+    .btn-secondary {
+      background: #0f172a;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+
+    .btn-secondary:hover {
+      background: #1e293b;
+    }
+
+    /* Área derecha: Vista previa del diploma */
+    .preview-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+    }
+
+    .preview-hint {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* Lienzo del Certificado (proporción A4 apaisado) */
+    .certificate-wrapper {
+      width: 100%;
+      max-width: 960px;
+      aspect-ratio: 1.414 / 1;
+      background: var(--cert-border-bg);
+      padding: 22px;
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+      position: relative;
+      transition: all 0.25s ease;
+    }
+
+    .certificate-inner {
+      width: 100%;
+      height: 100%;
+      background: var(--cert-bg);
+      border: 4px solid var(--cert-primary);
+      border-radius: 12px;
+      padding: 32px 44px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      font-family: var(--cert-font);
+      overflow: hidden;
+    }
+
+    /* Marco interior decorativo */
+    .certificate-inner::before {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border: 1.5px dashed var(--cert-secondary);
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0.55;
+    }
+
+    /* Stickers posicionados en las esquinas */
+    .corner-sticker {
+      position: absolute;
+      font-size: 2.35rem;
+      z-index: 2;
+      user-select: none;
+      filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.1));
+      transition: transform 0.2s ease;
+    }
+
+    .sticker-tl { top: 18px; left: 22px; transform: rotate(-10deg); }
+    .sticker-tr { top: 18px; right: 22px; transform: rotate(10deg); }
+    .sticker-bl { bottom: 18px; left: 22px; transform: rotate(8deg); }
+    .sticker-br { bottom: 18px; right: 22px; transform: rotate(-8deg); }
+
+    /* Encabezado institucional del diploma */
+    .cert-header {
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .cert-program {
+      font-size: 0.85rem;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--cert-secondary);
+      background: rgba(2, 132, 199, 0.08);
+      padding: 5px 16px;
+      border-radius: 999px;
+    }
+
+    .cert-title {
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: var(--cert-primary);
+      line-height: 1.1;
+      margin-top: 4px;
+    }
+
+    .cert-subtitle {
+      font-size: 0.96rem;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    /* Bloque central: Nombre del maestro y dedicatoria */
+    .cert-body {
+      z-index: 2;
+      max-width: 86%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .teacher-name {
+      font-size: 2.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 3px solid var(--cert-accent);
+      padding: 0 24px 4px 24px;
+      min-width: 320px;
+    }
+
+    .cert-message {
+      font-size: 1.04rem;
+      line-height: 1.55;
+      color: #334155;
+      max-width: 680px;
+      white-space: pre-line;
+    }
+
+    /* Pie del certificado: Firmas y logo de Ceibal */
+    .cert-footer {
+      z-index: 2;
+      width: 90%;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 6px;
+    }
+
+    .signature-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .signature-value {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1.5px solid #94a3b8;
+      padding-bottom: 4px;
+      width: 90%;
+    }
+
+    .signature-role {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    /* Emblema central de Ceibal */
+    .ceibal-seal {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 2px solid #009c49;
+      background: #f0fdf4;
+      min-width: 132px;
+    }
+
+    .ceibal-seal img {
+      max-height: 44px;
+      max-width: 120px;
+      object-fit: contain;
+    }
+
+    .ceibal-wordmark {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #009c49;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    .ceibal-sub {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #007537;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 3px;
+    }
+
+    /* Responsive para pantallas pequeñas */
+    @media (max-width: 1024px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+      .certificate-wrapper {
+        aspect-ratio: auto;
+        min-height: 560px;
+      }
+    }
+
+    /* Estilos exclusivos para impresión / Guardar como PDF */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      body {
+        background: white;
+      }
+      header,
+      .controls-panel,
+      .preview-hint {
+        display: none !important;
+      }
+      .workspace {
+        display: block;
+        padding: 0;
+        margin: 0;
+        max-width: none;
+      }
+      .preview-area {
+        width: 100vw;
+        height: 100vh;
+        justify-content: center;
+      }
+      .certificate-wrapper {
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        box-shadow: none;
+        border-radius: 0;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🎓 Creador de Certificado</h1>
+    <span class="badge">PC e IA · Ceibal Uruguay</span>
+  </header>
+
+  <main class="workspace">
+    <!-- PANEL IZQUIERDO DE EDICIÓN -->
+    <section class="controls-panel">
+      <div class="control-group">
+        <label for="input-teacher">Nombre del Maestro / Maestra</label>
+        <input type="text" id="input-teacher" value="Maestro/a " placeholder="Ej: Maestro " />
+      </div>
+
+      <div class="control-group">
+        <label for="input-students">Firmado por (Grupo o Estudiantes)</label>
+        <input type="text" id="input-students" value="Grado/Curso/Escuela" placeholder="Ej: 5.º A - Escuela N.º ..." />
+      </div>
+
+      <div class="control-group">
+        <label for="input-message">
+          Mensaje de agradecimiento
+          <button type="button" class="btn-idea" id="btn-next-idea">✨ Otra idea</button>
+        </label>
+        <textarea id="input-message">Por ser nuestro puente indispensable detrás de la pantalla durante todo el año en Pensamiento Computacional e Inteligencia Artificial. ¡Gracias por tu paciencia, alegría y por acompañarnos en cada desafío!</textarea>
+      </div>
+
+      <div class="control-group">
+        <label>Estilo de letra</label>
+        <div class="font-grid">
+          <button type="button" class="font-btn active" data-font="'Montserrat', sans-serif" style="font-family: 'Montserrat', sans-serif;">Moderna</button>
+          <button type="button" class="font-btn" data-font="'Playfair Display', serif" style="font-family: 'Playfair Display', serif;">Elegante</button>
+          <button type="button" class="font-btn" data-font="'Fredoka', sans-serif" style="font-family: 'Fredoka', sans-serif;">Divertida</button>
+          <button type="button" class="font-btn" data-font="'JetBrains Mono', monospace" style="font-family: 'JetBrains Mono', monospace;">Código / IA</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Colores del diploma</label>
+        <div class="palette-grid">
+          <button type="button" class="palette-btn active" data-primary="#009c49" data-secondary="#0284c7" data-accent="#f59e0b" data-borderbg="#f0fdf4">
+            <div class="swatch-row">
+              <span class="swatch" style="background:#009c49"></span>
+              <span class="swatch" style="background:#0284c7"></span>
+            </div>
+            Ceibal
+          </button>
+          <button type="button" class="palette-btn" data-primary="#2563eb" data-secondary="#7c3aed" data-accent="#f59e0b" data-borderbg="#eff6ff">
+            <div class="swatch-row">
+              <span class="swatch" style="background:#2563eb"></span>
+              <span class="swatch" style="background:#7c3aed"></span>
+            </div>
+            Tech
+          </button>
+          <button type="button" class="palette-btn" data-primary="#d97706" data-secondary="#dc2626" data-accent="#009c49" data-borderbg="#fffbeb">
+            <div class="swatch-row">
+              <span class="swatch" style="background:#d97706"></span>
+              <span class="swatch" style="background:#dc2626"></span>
+            </div>
+            Cálido
+          </button>
+          <button type="button" class="palette-btn" data-primary="#7c3aed" data-secondary="#db2777" data-accent="#06b6d4" data-borderbg="#faf5ff">
+            <div class="swatch-row">
+              <span class="swatch" style="background:#7c3aed"></span>
+              <span class="swatch" style="background:#db2777"></span>
+            </div>
+            Creativo
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Stickers PC e IA (hasta 4)</label>
+        <div class="stickers-grid">
+          <button type="button" class="sticker-btn active" data-emoji="🤖"><span class="emoji">🤖</span>Robot</button>
+          <button type="button" class="sticker-btn active" data-emoji="💻"><span class="emoji">💻</span>Compu</button>
+          <button type="button" class="sticker-btn active" data-emoji="🧩"><span class="emoji">🧩</span>Bloques</button>
+          <button type="button" class="sticker-btn active" data-emoji="❤️"><span class="emoji">❤️</span>Gracias</button>
+          <button type="button" class="sticker-btn" data-emoji="🚀"><span class="emoji">🚀</span>Cohete</button>
+          <button type="button" class="sticker-btn" data-emoji="🧠"><span class="emoji">🧠</span>IA</button>
+          <button type="button" class="sticker-btn" data-emoji="⭐"><span class="emoji">⭐</span>Estrella</button>
+          <button type="button" class="sticker-btn" data-emoji="🌉"><span class="emoji">🌉</span>Puente</button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Logo institucional (Opcional)</label>
+        <div class="logo-upload-row">
+          <label class="btn-upload" for="input-logo">📁 Subir logo oficial de Ceibal</label>
+          <input type="file" id="input-logo" accept="image/*" hidden />
+          <button type="button" class="btn-reset-logo" id="btn-reset-logo" title="Restaurar sello por defecto">↺</button>
+        </div>
+      </div>
+
+      <div class="actions-box">
+        <button type="button" class="btn-primary" id="btn-download-png">📸 Descargar como Imagen (PNG)</button>
+        <button type="button" class="btn-secondary" onclick="window.print()">🖨️ Imprimir o Guardar PDF</button>
+      </div>
+    </section>
+
+    <!-- ÁREA DERECHA: VISTA PREVIA EN TIEMPO REAL -->
+    <section class="preview-area">
+      <p class="preview-hint">Vista previa en tiempo real · Todo lo que edites a la izquierda se actualiza al instante</p>
+
+      <div class="certificate-wrapper" id="certificate-capture">
+        <div class="certificate-inner">
+          <!-- Stickers en las 4 esquinas -->
+          <span class="corner-sticker sticker-tl" id="slot-0">🤖</span>
+          <span class="corner-sticker sticker-tr" id="slot-1">💻</span>
+          <span class="corner-sticker sticker-bl" id="slot-2">🧩</span>
+          <span class="corner-sticker sticker-br" id="slot-3">❤️</span>
+
+          <!-- Encabezado -->
+          <div class="cert-header">
+            <div class="cert-program">Pensamiento Computacional e Inteligencia Artificial 2026</div>
+            <h2 class="cert-title">Certificado de Agradecimiento</h2>
+            <p class="cert-subtitle">Se otorga con mucho cariño este reconocimiento especial a:</p>
+          </div>
+
+          <!-- Cuerpo central -->
+          <div class="cert-body">
+            <div class="teacher-name" id="preview-teacher">Nombre y apellido maestro</div>
+            <p class="cert-message" id="preview-message">Por ser nuestro puente indispensable detrás de la pantalla durante todo el año en Pensamiento Computacional e Inteligencia Artificial. ¡Gracias por tu paciencia, alegría y por acompañarnos en cada desafío!</p>
+          </div>
+
+          <!-- Pie con firmas y sello de Ceibal -->
+          <div class="cert-footer">
+            <div class="signature-block">
+              <div class="signature-value" id="preview-students">Grado/Curso/Escuela</div>
+              <div class="signature-role">Tus alumnos</div>
+            </div>
+
+            <div class="ceibal-seal" id="ceibal-seal-container">
+              <div class="ceibal-wordmark">Ceibal</div>
+              <div class="ceibal-sub">Uruguay · 2026</div>
+            </div>
+
+            <div class="signature-block">
+              <div class="signature-value">Dora Quintero</div>
+              <div class="signature-role">Docente remoto · Fundación Programar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 1. Vinculación de campos de texto en tiempo real
+    const inputTeacher = document.getElementById('input-teacher');
+    const previewTeacher = document.getElementById('preview-teacher');
+    inputTeacher.addEventListener('input', () => {
+      previewTeacher.textContent = inputTeacher.value.trim() || 'Nombre y apellido del maestro';
+    });
+
+    const inputStudents = document.getElementById('input-students');
+    const previewStudents = document.getElementById('preview-students');
+    inputStudents.addEventListener('input', () => {
+      previewStudents.textContent = inputStudents.value.trim() || 'Grado/Grupo/Escuela';
+    });
+
+    const inputMessage = document.getElementById('input-message');
+    const previewMessage = document.getElementById('preview-message');
+    inputMessage.addEventListener('input', () => {
+      previewMessage.textContent = inputMessage.value;
+    });
+
+    // 2. Mensajes sugeridos rotativos
+    const sampleMessages = [
+      "Por ser el puente indispensable entre tus alumnos y la profe de PC.¡Gracias por tu paciencia, alegría y por acompañarnos en cada desafío!",
+      "Por ser el puente indispensable entre tus alumnos y la profe de PC. ¡Gracias por tu paciencia, alegría y por acompañarnos en cada desafío!",
+      "¡Sos el mejor puente entre nuestra clase y la pantalla! Gracias por ayudarnos a pensar, crear, equivocarnos sin miedo y aprender juntos este 2026.",
+      "Por estar siempre ahí cuando un código no funcionaba y celebrar con nosotros cada logro en Pensamiento Computacional e IA. ¡Muchas gracias, Felipe!"
+    ];
+    let ideaIndex = 0;
+    document.getElementById('btn-next-idea').addEventListener('click', () => {
+      ideaIndex = (ideaIndex + 1) % sampleMessages.length;
+      inputMessage.value = sampleMessages[ideaIndex];
+      previewMessage.textContent = sampleMessages[ideaIndex];
+    });
+
+    // 3. Cambio de tipografía
+    document.querySelectorAll('.font-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.documentElement.style.setProperty('--cert-font', btn.dataset.font);
+      });
+    });
+
+    // 4. Cambio de paleta de colores
+    document.querySelectorAll('.palette-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const root = document.documentElement;
+        root.style.setProperty('--cert-primary', btn.dataset.primary);
+        root.style.setProperty('--cert-secondary', btn.dataset.secondary);
+        root.style.setProperty('--cert-accent', btn.dataset.accent);
+        root.style.setProperty('--cert-border-bg', btn.dataset.borderbg);
+      });
+    });
+
+    // 5. Selección de hasta 4 stickers para las esquinas
+    const stickerButtons = document.querySelectorAll('.sticker-btn');
+    const slots = [
+      document.getElementById('slot-0'),
+      document.getElementById('slot-1'),
+      document.getElementById('slot-2'),
+      document.getElementById('slot-3')
+    ];
+
+    function updateStickers() {
+      const activeEmojis = Array.from(stickerButtons)
+        .filter(b => b.classList.contains('active'))
+        .map(b => b.dataset.emoji);
+
+      slots.forEach((slot, idx) => {
+        slot.textContent = activeEmojis[idx] || '';
+      });
+    }
+
+    stickerButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.classList.contains('active')) {
+          btn.classList.remove('active');
+        } else {
+          const activeCount = document.querySelectorAll('.sticker-btn.active').length;
+          if (activeCount >= 4) {
+            // Desactiva el primero seleccionado para permitir elegir uno nuevo
+            document.querySelector('.sticker-btn.active').classList.remove('active');
+          }
+          btn.classList.add('active');
+        }
+        updateStickers();
+      });
+    });
+
+    // 6. Subida opcional del logo oficial de Ceibal
+    const inputLogo = document.getElementById('input-logo');
+    const sealContainer = document.getElementById('ceibal-seal-container');
+    const defaultSealHTML = sealContainer.innerHTML;
+
+    inputLogo.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        sealContainer.innerHTML = `<img src="${event.target.result}" alt="Logo Ceibal" />`;
+        sealContainer.style.border = 'none';
+        sealContainer.style.background = 'transparent';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('btn-reset-logo').addEventListener('click', () => {
+      inputLogo.value = '';
+      sealContainer.innerHTML = defaultSealHTML;
+      sealContainer.style.border = '2px solid #009c49';
+      sealContainer.style.background = '#f0fdf4';
+    });
+
+    // 7. Descargar como imagen PNG de alta resolución
+    document.getElementById('btn-download-png').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-download-png');
+      const originalText = btn.textContent;
+      btn.textContent = '⏳ Generando imagen...';
+      btn.disabled = true;
+
+      try {
+        const element = document.getElementById('certificate-capture');
+        const canvas = await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null
+        });
+        const link = document.createElement('a');
+        link.download = 'Certificado-PCeIA-Ceibal-2026.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (err) {
+        alert('No se pudo descargar la imagen automáticamente. Podés usar el botón "Imprimir o Guardar PDF".');
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
